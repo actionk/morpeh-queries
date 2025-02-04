@@ -4,11 +4,11 @@ Alternative to built-in filters using lambdas for [Morpeh ECS](https://github.co
 
 * Lambda syntax for querying entities & their Components
 * Supporting jobs & burst
-  * Automatic jobs scheduling
-  * Jobs dependencies
+    * Automatic jobs scheduling
+    * Jobs dependencies
 * Events
-  * World Events
-  * Entity Events
+    * World Events
+    * Entity Events
 
 ## Table of Contents
 
@@ -26,22 +26,16 @@ Alternative to built-in filters using lambdas for [Morpeh ECS](https://github.co
     - [.ForEach](#foreach)
     - [.ForEachParallel](#foreachparallel)
     - [.ForAll](#forall)
+    - [.ForEachNative](#foreachnative)
 - [Events](#events)
     - [Getting Started](#getting-started)
     - [Scheduling Events](#scheduling-events)
-      - [.ScheduleEvent](#scheduleevent)
-      - [.ScheduleEventForEntity](#scheduleeventforentity)
+        - [.ScheduleEvent](#scheduleevent)
+        - [.ScheduleEventForEntity](#scheduleeventforentity)
     - [Receiving Events](#receiving-events)
-      - [.CreateEventListener](#createeventlistener)
-      - [.ForAll](#forall-1)
-      - [.ForEach](#foreach-1)
-- [Jobs & Burst](#jobs--burst)
-    - [QuerySystem.ScheduleJob (IJob)](#querysystemschedulejob--ijob-)
-    - [Query.ScheduleJob (IJobParallelFor)](#queryschedulejob--ijobparallelfor-)
-    - [Scheduling Parallel Jobs](#scheduling-paralell-jobs)
-    - [Waiting for previous or inner jobs to finish](#waiting-for-previous-or-inner-jobs-to-finish)
-    - [Waiting for another job to finish](#waiting-for-another-job-to-finish)
-    - [.ForEachNative](#foreachnative)
+        - [.CreateEventListener](#createeventlistener)
+        - [.ForAll](#forall-1)
+        - [.ForEach](#foreach-1)
 - [Additions](#additions)
     - [Globals](#globals)
     - [Automatic Validation](#automatic-validation)
@@ -144,7 +138,7 @@ Results: **9.05** seconds (-38%)
 
 ## After
 
-In order to remove the boilerplate for acquiring the components and still have it optimized using Stashes, you can use the Queries from this plugin instead: 
+In order to remove the boilerplate for acquiring the components and still have it optimized using Stashes, you can use the Queries from this plugin instead:
 
 ```csharp
 public class WithQueriesSystem : QuerySystem
@@ -163,9 +157,11 @@ public class WithQueriesSystem : QuerySystem
 
 Results: **9.45** seconds (+5%)
 
-As you can see, we're using a `QuerySystem` abstract class that implements the queries inside, therefore we have no `OnUpdate` method anymore. If you need the `deltaTime` though, you can acquire it using `protected float deltaTime` field in `QuerySystem`, which is updated every time `QuerySystem.OnUpdate()` is called.
+As you can see, we're using a `QuerySystem` abstract class that implements the queries inside, therefore we have no `OnUpdate` method anymore. If you need the `deltaTime` though, you can acquire it
+using `protected float deltaTime` field in `QuerySystem`, which is updated every time `QuerySystem.OnUpdate()` is called.
 
-Performance-wise, it's a bit slower than the optimized solution that we've looked previously (because of using lambdas), but still faster that the "default" one and is **much** smaller than both of them.
+Performance-wise, it's a bit slower than the optimized solution that we've looked previously (because of using lambdas), but still faster that the "default" one and is **much** smaller than both of
+them.
 
 ## After (using Burst)
 
@@ -220,7 +216,7 @@ public class NoQueriesUsingStashJobsTestSystem : UpdateSystem
 }
 ```
 
-Results: `1.67` seconds (-83%). 
+Results: `1.67` seconds (-83%).
 
 Jobs are much faster, as you can see, but it requires even more preparations. Let's remove this boilerplate by using this plugin:
 
@@ -238,7 +234,8 @@ public class CustomJobQueriesTestSystem : QuerySystem
 
 Results: `1.69` seconds (+1%).
 
-This approach uses `Reflections API` to fill in all the required parameters in the job (`NativeFilter` & `NativeStash<T>`), but the code is well optimized and it affects performance very slightly. Supports as many stashes as you want to. 
+This approach uses `Reflections API` to fill in all the required parameters in the job (`NativeFilter` & `NativeStash<T>`), but the code is well optimized and it affects performance very slightly.
+Supports as many stashes as you want to.
 
 # Queries
 
@@ -246,7 +243,7 @@ This approach uses `Reflections API` to fill in all the required parameters in t
 
 You should define all the queries inside `Configure` method.
 
-`CreateQuery()` returns an object of type `QueryBuilder` that has many overloads for filtering that you can apply before describing the `ForEach` lambda. 
+`CreateQuery()` returns an object of type `QueryBuilder` that has many overloads for filtering that you can apply before describing the `ForEach` lambda.
 
 You can also **combine multiple filtering** calls in a sequence before describing the `ForEach` lambda:
 
@@ -273,6 +270,7 @@ CreateQuery()
 Supports up to 8 arguments (but you can extend it if you want).
 
 Equivalents in Morpeh:
+
 ```csharp
 Filter = Filter.With<TestComponent>().With<DamageComponent>();
 Filter = Filter.With<TestComponent>().With<DamageComponent>().With<PlayerComponent>().With<ViewComponent>();
@@ -294,6 +292,7 @@ CreateQuery()
 Supports up to 8 arguments (but you can extend it if you want).
 
 Equivalents in Morpeh:
+
 ```csharp
 Filter = Filter.Without<Dead>().Without<Inactive>();
 Filter = Filter.Without<Dead>().Without<Inactive>().Without<PlayerComponent>().Without<ViewComponent>();
@@ -310,6 +309,7 @@ Equivalent to Morpeh's `Filter.Without<T>`.
 ## .Also
 
 You can specify your custom filter if you want:
+
 ```csharp
 CreateQuery()
     .WithAll<TestComponent, DamageComponent>()
@@ -350,6 +350,54 @@ Instead of specifying a lambda for each entity that will be processed, you can s
 .ForAll(Filter filter)
 ```
 
+## .ForEachNative
+
+You can also just receive the native filter & stashes if you want to do your custom logic.
+
+```csharp
+[BurstCompile]
+public struct CustomTestJobParallel : IJobParallelFor
+{
+    [ReadOnly]
+    public NativeFilter entities;
+
+    public NativeStash<TestComponent> testComponentStash;
+
+    public void Execute(int index)
+    {
+        var entityId = entities[index];
+        ref var component = ref testComponentStash.Get(entityId, out var exists);
+        if (exists)
+        {
+            component.value++;
+        }
+    }
+}
+
+public class CustomJobsQueriesTestSystem : QuerySystem
+{
+    protected override void Configure()
+    {
+        CreateQuery()
+            .With<TestComponent>()
+            .ForEachNative((NativeFilter entities, NativeStash<TestComponent> testComponentStash) =>
+            {
+                var parallelJob = new CustomTestJobParallel
+                {
+                    entities = entities,
+                    testComponentStash = testComponentStash
+                };
+                var parallelJobHandle = parallelJob.Schedule(entities.length, 64);
+                parallelJobHandle.Complete();
+            });
+    }
+}
+```
+
+Results: ~2.40 seconds (`1 000 000` entities & `100` iterations)
+
+Supports up to `6` arguments (you can extend it if you want).
+
 # Events
 
 ## Getting started
@@ -365,7 +413,8 @@ world.EnableFeature<EventsFeature>();
 
 ### .ScheduleEvent
 
-You can schedule an event that will be distributed among all the listener systems during the next frame and will be deleted automatically afterwards. In order to do so, call `this.ScheduleEvent` inside `IQuerySystem` or `World.ScheduleEvent` inside `ISystem`:
+You can schedule an event that will be distributed among all the listener systems during the next frame and will be deleted automatically afterwards. In order to do so, call `this.ScheduleEvent`
+inside `IQuerySystem` or `World.ScheduleEvent` inside `ISystem`:
 
 ```csharp
 World.ScheduleEvent(new TestWorldEvent
@@ -378,7 +427,8 @@ When scheduling the event this way, you're creating one instance of this event t
 
 ### .ScheduleEventForEntity
 
-You can schedule an event that will connected to specified Entity and be distributed among all the listener systems during the next frame and will be deleted automatically afterwards. In order to do so, call `this.ScheduleEventForEntity` inside `IQuerySystem` or `World.ScheduleEventForEntity` inside `ISystem`:
+You can schedule an event that will connected to specified Entity and be distributed among all the listener systems during the next frame and will be deleted automatically afterwards. In order to do
+so, call `this.ScheduleEventForEntity` inside `IQuerySystem` or `World.ScheduleEventForEntity` inside `ISystem`:
 
 ```csharp
 this.ScheduleEventForEntity(entity, new TestWorldEvent
@@ -447,208 +497,14 @@ this.CreateEntityEventListener<TestWorldEvent>()
 
 If you're expecting a component that the Entity that received the event doesn't have -> ForEach won't be triggered for this entity!
 
-# Jobs & Burst
-
-To optimize the performance of your application, consider utilizing Unity's Jobs system and Burst technology to execute calculations in the background while running a query instead of executing them on the main thread. You can find examples of using Jobs in this chapter.
-
-## QuerySystem.ScheduleJob (IJob)
-
-If you want to schedule a job which will run once on every update, you can use this:
-
-```csharp
-public class WaitJobSystem : QuerySystem
-{
-    protected override void Configure()
-    {
-        this.ScheduleJob<WaitJob>();
-    }
-}
-```
-
-If you need to initialize your job somehow on every update, use preparation delegate:
-```csharp
-public class WaitJobSystem : QuerySystem
-{
-    protected override void Configure()
-    {
-        this.ScheduleJob((ref WaitJob job) =>
-        {
-            job.millis = 10;
-        });
-    }
-}
-```
-
-###Query.ScheduleJob (IJobParallelFor)
-
-If you want to schedule a job which will be able to iterate through entities that your query is selecting, use `QueryBuilder.ScheduleJob<YourJobType>` to schedule it. 
-
-All the fields (`NativeFilter` & `NativeStash<T>`) will be injected automatically!
-
-Example
-
-```csharp
-[BurstCompile]
-public struct CustomTestJobParallel : IJobParallelFor
-{
-    [ReadOnly]
-    public NativeFilter entities;
-
-    public NativeStash<TestComponent> testComponentStash;
-
-    public void Execute(int index)
-    {
-        var entityId = entities[index];
-        ref var component = ref testComponentStash.Get(entityId, out var exists);
-        if (exists)
-        {
-            component.value++;
-        }
-    }
-}
-
-public class CustomJobQueriesTestSystem : QuerySystem
-{
-    protected override void Configure()
-    {
-        CreateQuery()
-            .With<TestComponent>()
-            .ScheduleJob<CustomTestJobParallel>();
-    }
-}
-```
-
-Results: ~1.6 seconds (`1 000 000` entities & `100` iterations)
-
-Supports as many NativeStash's as you want.
-
-## Scheduling Parallel Jobs
-
-You can schedule multiple jobs in one system as well:
-
-```csharp
-public class CustomParallelJobQueriesTestSystem : QuerySystem
-{
-    protected override void Configure()
-    {
-        CreateQuery()
-            .With<TestComponent>()
-            .ScheduleJob<CustomTestJobParallel>();
-
-        CreateQuery()
-            .With<TestComponent>()
-            .ScheduleJob<CustomTestJobParallelValue2>();
-    }
-}
-```
-
-They will be executed in parallel.
-
-### Waiting for previous or inner jobs to finish
-
-By default, `QuerySystem` won't wait until all the previous and/or inner jobs are completed, but will delegate this logic to the `World.JobHandle` instead. In this case, the world will wait for all the jobs in all the systems to be finished. 
-
-However, you can change this behaviour by using `WaitUntilInnerJobsCompleted` and/or `WaitUntilPreviousJobsCompleted`:
-
-```csharp
-public class CustomSequentialJobQueriesTestSystem : QuerySystem
-{
-    protected override void Configure()
-    {
-        // let's wait until all the previous jobs (from previous systems) are finished
-        WaitUntilPreviousJobsCompleted();
-        
-        // let's schedule first job
-        CreateQuery()
-            .With<TestComponent>()
-            .ScheduleJob<CustomTestJobParallel>();
-        
-        // scheduling another job that will be run in parallel with the 1st
-        CreateQuery()
-            .With<TestComponent>()
-            .ScheduleJob<AnotherParallelCustomTestJobParallel>();
-        
-        // let's wait until both jobs that we created to be finished before proceeding to the next system
-        WaitUntilInnerJobsCompleted();
-    }
-}
-```
-
-## Waiting for another job to finish
-
-You can also force one job to be dependent on another (to only execute when the 1st is finished):
-
-```csharp
-public class CustomSequentialJobQueriesTestSystem : QuerySystem
-{
-    protected override void Configure()
-    {
-        var jobHandle = CreateQuery()
-            .With<TestComponent>()
-            .ScheduleJob<CustomTestJobParallel>();
-
-        CreateQuery()
-            .With<TestComponent>()
-            .ScheduleJob<CustomTestJobParallelValue2>(jobHandle);
-    }
-}
-```
-
-## .ForEachNative
-
-You can also just receive the native filter & stashes if you want to do your custom logic.
-
-```csharp
-[BurstCompile]
-public struct CustomTestJobParallel : IJobParallelFor
-{
-    [ReadOnly]
-    public NativeFilter entities;
-
-    public NativeStash<TestComponent> testComponentStash;
-
-    public void Execute(int index)
-    {
-        var entityId = entities[index];
-        ref var component = ref testComponentStash.Get(entityId, out var exists);
-        if (exists)
-        {
-            component.value++;
-        }
-    }
-}
-
-public class CustomJobsQueriesTestSystem : QuerySystem
-{
-    protected override void Configure()
-    {
-        CreateQuery()
-            .With<TestComponent>()
-            .ForEachNative((NativeFilter entities, NativeStash<TestComponent> testComponentStash) =>
-            {
-                var parallelJob = new CustomTestJobParallel
-                {
-                    entities = entities,
-                    testComponentStash = testComponentStash
-                };
-                var parallelJobHandle = parallelJob.Schedule(entities.length, 64);
-                parallelJobHandle.Complete();
-            });
-    }
-}
-```
-
-Results: ~2.40 seconds (`1 000 000` entities & `100` iterations)
-
-Supports up to `6` arguments (you can extend it if you want).
-
 # Additions
 
 ## Automatic Validation
 
-Be default, the query engine applies checks when you create a query: all the components that you're using in `ForEach` should also be defined in a query using `With` or `WithAll` to guarantee that the components exist on the entities that the resulting `Filter` returns.
+Be default, the query engine applies checks when you create a query: all the components that you're using in `ForEach` should also be defined in a query using `With` or `WithAll` to guarantee that the
+components exist on the entities that the resulting `Filter` returns.
 
-This validation **only happens once** when creating a query so it doesn't affect the performance of your `ForEach` method! 
+This validation **only happens once** when creating a query so it doesn't affect the performance of your `ForEach` method!
 
 However, if you're willing to disable the validation for some reason, you can use `.SkipValidation(true)` method:
 
@@ -704,11 +560,13 @@ Don't forget to call the base method, otherwise `Configure` and/or queries execu
 
 ## Custom systems that don't extend QuerySystem
 
-If you have your own systems that extend `ISystem` and you don't want to inherit `QuerySystem` class, you can just implement interface `IQuerySystem` and implement the logic of executing the lambdas yourself.
+If you have your own systems that extend `ISystem` and you don't want to inherit `QuerySystem` class, you can just implement interface `IQuerySystem` and implement the logic of executing the lambdas
+yourself.
 
 # Credits
 
-* Thanks to [codewriter-packages](https://github.com/codewriter-packages) for [Morpeh.Events](https://github.com/codewriter-packages/Morpeh.Events) implementation that was taken as a source for implementing events!
+* Thanks to [codewriter-packages](https://github.com/codewriter-packages) for [Morpeh.Events](https://github.com/codewriter-packages/Morpeh.Events) implementation that was taken as a source for
+  implementing events!
 
 # License
 

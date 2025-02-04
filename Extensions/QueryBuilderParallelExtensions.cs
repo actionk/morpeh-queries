@@ -9,14 +9,14 @@ namespace Scellecs.Morpeh
         // ------------------------------------------------- //
         // 1 parameter
         // ------------------------------------------------- //
-        
+
         public static QueryBuilder ForEachParallel<T1>(this QueryBuilder queryBuilder, Callbacks.C<T1> callback)
             where T1 : unmanaged, IComponent
         {
             var filter = queryBuilder.Build();
             if (!filter.hasFilter)
                 throw new NotImplementedException($"You're not allowed to use [{nameof(ForEachParallel)}] on an empty filter in [{queryBuilder.System.GetType().Name}]");
-            
+
             if (!queryBuilder.skipValidationEnabled)
                 QueryHelper.ValidateRequest(queryBuilder, filter, QueryHelper.GetRequestedTypeInfo<T1>());
 
@@ -41,7 +41,7 @@ namespace Scellecs.Morpeh
             var filter = queryBuilder.Build();
             if (!filter.hasFilter)
                 throw new NotImplementedException($"You're not allowed to use [{nameof(ForEachParallel)}] on an empty filter in [{queryBuilder.System.GetType().Name}]");
-            
+
             if (!queryBuilder.skipValidationEnabled)
                 QueryHelper.ValidateRequest(queryBuilder, filter, QueryHelper.GetRequestedTypeInfo<T1>());
 
@@ -52,15 +52,14 @@ namespace Scellecs.Morpeh
                 var nativeStashT1 = stashT1.AsNative();
                 Parallel.For(0, nativeFilter.length, index =>
                 {
-                    var entityId = nativeFilter[index];
-                    var entity = filter.World.GetEntity(entityId.id);
-                    ref var componentT1 = ref nativeStashT1.Get(entityId);
+                    var entity = nativeFilter[index];
+                    ref var componentT1 = ref nativeStashT1.Get(entity);
                     callback.Invoke(entity, ref componentT1);
                 });
             });
             return queryBuilder;
         }
-        
+
         // ------------------------------------------------- //
         // 2 parameters
         // ------------------------------------------------- //
@@ -85,10 +84,9 @@ namespace Scellecs.Morpeh
                 var nativeStashT2 = stashT2.AsNative();
                 Parallel.For(0, nativeFilter.length, index =>
                 {
-                    var entityId = nativeFilter[index];
-                    var entity = filter.World.GetEntity(entityId.id);
-                    ref var componentT1 = ref nativeStashT1.Get(entityId);
-                    ref var componentT2 = ref nativeStashT2.Get(entityId);
+                    var entity = nativeFilter[index];
+                    ref var componentT1 = ref nativeStashT1.Get(entity);
+                    ref var componentT2 = ref nativeStashT2.Get(entity);
                     callback.Invoke(entity, ref componentT1, ref componentT2);
                 });
             });
@@ -115,9 +113,9 @@ namespace Scellecs.Morpeh
                 var nativeStashT2 = stashT2.AsNative();
                 Parallel.For(0, nativeFilter.length, index =>
                 {
-                    var entityId = nativeFilter[index];
-                    ref var componentT1 = ref nativeStashT1.Get(entityId);
-                    ref var componentT2 = ref nativeStashT2.Get(entityId);
+                    var entity = nativeFilter[index];
+                    ref var componentT1 = ref nativeStashT1.Get(entity);
+                    ref var componentT2 = ref nativeStashT2.Get(entity);
                     callback.Invoke(ref componentT1, ref componentT2);
                 });
             });
@@ -152,11 +150,10 @@ namespace Scellecs.Morpeh
                 var nativeStashT3 = stashT3.AsNative();
                 Parallel.For(0, nativeFilter.length, index =>
                 {
-                    var entityId = nativeFilter[index];
-                    var entity = filter.World.GetEntity(entityId.id);
-                    ref var componentT1 = ref nativeStashT1.Get(entityId);
-                    ref var componentT2 = ref nativeStashT2.Get(entityId);
-                    ref var componentT3 = ref nativeStashT3.Get(entityId);
+                    var entity = nativeFilter[index];
+                    ref var componentT1 = ref nativeStashT1.Get(entity);
+                    ref var componentT2 = ref nativeStashT2.Get(entity);
+                    ref var componentT3 = ref nativeStashT3.Get(entity);
                     callback.Invoke(entity, ref componentT1, ref componentT2, ref componentT3);
                 });
             });
@@ -228,12 +225,11 @@ namespace Scellecs.Morpeh
                 var nativeStashT4 = stashT4.AsNative();
                 Parallel.For(0, nativeFilter.length, index =>
                 {
-                    var entityId = nativeFilter[index];
-                    var entity = filter.World.GetEntity(entityId.id);
-                    ref var componentT1 = ref nativeStashT1.Get(entityId);
-                    ref var componentT2 = ref nativeStashT2.Get(entityId);
-                    ref var componentT3 = ref nativeStashT3.Get(entityId);
-                    ref var componentT4 = ref nativeStashT4.Get(entityId);
+                    var entity = nativeFilter[index];
+                    ref var componentT1 = ref nativeStashT1.Get(entity);
+                    ref var componentT2 = ref nativeStashT2.Get(entity);
+                    ref var componentT3 = ref nativeStashT3.Get(entity);
+                    ref var componentT4 = ref nativeStashT4.Get(entity);
                     callback.Invoke(entity, ref componentT1, ref componentT2, ref componentT3, ref componentT4);
                 });
             });
@@ -313,13 +309,12 @@ namespace Scellecs.Morpeh
                 var nativeStashT5 = stashT5.AsNative();
                 Parallel.For(0, nativeFilter.length, index =>
                 {
-                    var entityId = nativeFilter[index];
-                    var entity = filter.World.GetEntity(entityId.id);
-                    ref var componentT1 = ref nativeStashT1.Get(entityId);
-                    ref var componentT2 = ref nativeStashT2.Get(entityId);
-                    ref var componentT3 = ref nativeStashT3.Get(entityId);
-                    ref var componentT4 = ref nativeStashT4.Get(entityId);
-                    ref var componentT5 = ref nativeStashT5.Get(entityId);
+                    var entity = nativeFilter[index];
+                    ref var componentT1 = ref nativeStashT1.Get(entity);
+                    ref var componentT2 = ref nativeStashT2.Get(entity);
+                    ref var componentT3 = ref nativeStashT3.Get(entity);
+                    ref var componentT4 = ref nativeStashT4.Get(entity);
+                    ref var componentT5 = ref nativeStashT5.Get(entity);
                     callback.Invoke(entity, ref componentT1, ref componentT2, ref componentT3, ref componentT4, ref componentT5);
                 });
             });
@@ -407,14 +402,13 @@ namespace Scellecs.Morpeh
                 var nativeStashT6 = stashT6.AsNative();
                 Parallel.For(0, nativeFilter.length, index =>
                 {
-                    var entityId = nativeFilter[index];
-                    var entity = filter.World.GetEntity(entityId.id);
-                    ref var componentT1 = ref nativeStashT1.Get(entityId);
-                    ref var componentT2 = ref nativeStashT2.Get(entityId);
-                    ref var componentT3 = ref nativeStashT3.Get(entityId);
-                    ref var componentT4 = ref nativeStashT4.Get(entityId);
-                    ref var componentT5 = ref nativeStashT5.Get(entityId);
-                    ref var componentT6 = ref nativeStashT6.Get(entityId);
+                    var entity = nativeFilter[index];
+                    ref var componentT1 = ref nativeStashT1.Get(entity);
+                    ref var componentT2 = ref nativeStashT2.Get(entity);
+                    ref var componentT3 = ref nativeStashT3.Get(entity);
+                    ref var componentT4 = ref nativeStashT4.Get(entity);
+                    ref var componentT5 = ref nativeStashT5.Get(entity);
+                    ref var componentT6 = ref nativeStashT6.Get(entity);
                     callback.Invoke(entity, ref componentT1, ref componentT2, ref componentT3, ref componentT4, ref componentT5, ref componentT6);
                 });
             });
@@ -455,14 +449,13 @@ namespace Scellecs.Morpeh
                 var nativeStashT6 = stashT6.AsNative();
                 Parallel.For(0, nativeFilter.length, index =>
                 {
-                    var entityId = nativeFilter[index];
-                    var entity = filter.World.GetEntity(entityId.id);
-                    ref var componentT1 = ref nativeStashT1.Get(entityId);
-                    ref var componentT2 = ref nativeStashT2.Get(entityId);
-                    ref var componentT3 = ref nativeStashT3.Get(entityId);
-                    ref var componentT4 = ref nativeStashT4.Get(entityId);
-                    ref var componentT5 = ref nativeStashT5.Get(entityId);
-                    ref var componentT6 = ref nativeStashT6.Get(entityId);
+                    var entity = nativeFilter[index];
+                    ref var componentT1 = ref nativeStashT1.Get(entity);
+                    ref var componentT2 = ref nativeStashT2.Get(entity);
+                    ref var componentT3 = ref nativeStashT3.Get(entity);
+                    ref var componentT4 = ref nativeStashT4.Get(entity);
+                    ref var componentT5 = ref nativeStashT5.Get(entity);
+                    ref var componentT6 = ref nativeStashT6.Get(entity);
                     callback.Invoke(ref componentT1, ref componentT2, ref componentT3, ref componentT4, ref componentT5, ref componentT6);
                 });
             });
@@ -510,15 +503,14 @@ namespace Scellecs.Morpeh
                 var nativeStashT7 = stashT7.AsNative();
                 Parallel.For(0, nativeFilter.length, index =>
                 {
-                    var entityId = nativeFilter[index];
-                    var entity = filter.World.GetEntity(entityId.id);
-                    ref var componentT1 = ref nativeStashT1.Get(entityId);
-                    ref var componentT2 = ref nativeStashT2.Get(entityId);
-                    ref var componentT3 = ref nativeStashT3.Get(entityId);
-                    ref var componentT4 = ref nativeStashT4.Get(entityId);
-                    ref var componentT5 = ref nativeStashT5.Get(entityId);
-                    ref var componentT6 = ref nativeStashT6.Get(entityId);
-                    ref var componentT7 = ref nativeStashT7.Get(entityId);
+                    var entity = nativeFilter[index];
+                    ref var componentT1 = ref nativeStashT1.Get(entity);
+                    ref var componentT2 = ref nativeStashT2.Get(entity);
+                    ref var componentT3 = ref nativeStashT3.Get(entity);
+                    ref var componentT4 = ref nativeStashT4.Get(entity);
+                    ref var componentT5 = ref nativeStashT5.Get(entity);
+                    ref var componentT6 = ref nativeStashT6.Get(entity);
+                    ref var componentT7 = ref nativeStashT7.Get(entity);
                     callback.Invoke(entity, ref componentT1, ref componentT2, ref componentT3, ref componentT4, ref componentT5, ref componentT6, ref componentT7);
                 });
             });
@@ -620,16 +612,15 @@ namespace Scellecs.Morpeh
                 var nativeStashT8 = stashT8.AsNative();
                 Parallel.For(0, nativeFilter.length, index =>
                 {
-                    var entityId = nativeFilter[index];
-                    var entity = filter.World.GetEntity(entityId.id);
-                    ref var componentT1 = ref nativeStashT1.Get(entityId);
-                    ref var componentT2 = ref nativeStashT2.Get(entityId);
-                    ref var componentT3 = ref nativeStashT3.Get(entityId);
-                    ref var componentT4 = ref nativeStashT4.Get(entityId);
-                    ref var componentT5 = ref nativeStashT5.Get(entityId);
-                    ref var componentT6 = ref nativeStashT6.Get(entityId);
-                    ref var componentT7 = ref nativeStashT7.Get(entityId);
-                    ref var componentT8 = ref nativeStashT8.Get(entityId);
+                    var entity = nativeFilter[index];
+                    ref var componentT1 = ref nativeStashT1.Get(entity);
+                    ref var componentT2 = ref nativeStashT2.Get(entity);
+                    ref var componentT3 = ref nativeStashT3.Get(entity);
+                    ref var componentT4 = ref nativeStashT4.Get(entity);
+                    ref var componentT5 = ref nativeStashT5.Get(entity);
+                    ref var componentT6 = ref nativeStashT6.Get(entity);
+                    ref var componentT7 = ref nativeStashT7.Get(entity);
+                    ref var componentT8 = ref nativeStashT8.Get(entity);
                     callback.Invoke(entity, ref componentT1, ref componentT2, ref componentT3, ref componentT4, ref componentT5, ref componentT6, ref componentT7, ref componentT8);
                 });
             });
@@ -690,6 +681,5 @@ namespace Scellecs.Morpeh
             });
             return queryBuilder;
         }
-
     }
 }
