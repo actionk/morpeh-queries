@@ -4,8 +4,8 @@ namespace Scellecs.Morpeh
 {
     public class QueryBuilder
     {
-        private static readonly MethodInfo FILTER_WITH_METHOD_INFO = typeof(FilterExtensions).GetMethod("With");
-        private static readonly MethodInfo FILTER_WITHOUT_METHOD_INFO = typeof(FilterExtensions).GetMethod("Without");
+        private static readonly MethodInfo FILTER_WITH_METHOD_INFO = typeof(FilterBuilder).GetMethod("With");
+        private static readonly MethodInfo FILTER_WITHOUT_METHOD_INFO = typeof(FilterBuilder).GetMethod("Without");
 
         private readonly IQuerySystem m_querySystem;
         internal FilterBuilder filterBuilder;
@@ -41,7 +41,7 @@ namespace Scellecs.Morpeh
             return new CompiledQuery(filterBuilder.Build());
         }
 
-#region Parameters
+        #region Parameters
 
         public QueryBuilder SkipValidation(bool skipValidation)
         {
@@ -55,6 +55,6 @@ namespace Scellecs.Morpeh
             return this;
         }
 
-#endregion
+        #endregion
     }
 }

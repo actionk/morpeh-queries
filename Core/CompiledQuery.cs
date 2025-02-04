@@ -12,12 +12,12 @@ namespace Scellecs.Morpeh
 
         public struct WorldEntitiesEnumerator : IEnumerator<Entity>
         {
-            private readonly Entity[] m_entities;
+            private readonly EntityData[] m_entities;
             private int m_index;
             private bool m_useEntityEnumerator;
-            private Filter.EntityEnumerator m_entityEnumerator;
+            private Filter.Enumerator m_entityEnumerator;
 
-            public WorldEntitiesEnumerator(Entity[] worldEntities)
+            public WorldEntitiesEnumerator(EntityData[] worldEntities)
             {
                 m_entities = worldEntities;
                 m_index = 0;
@@ -25,7 +25,7 @@ namespace Scellecs.Morpeh
                 m_entityEnumerator = default;
             }
 
-            public WorldEntitiesEnumerator(Filter.EntityEnumerator entityEnumerator)
+            public WorldEntitiesEnumerator(Filter.Enumerator entityEnumerator)
             {
                 m_entities = default;
                 m_index = 0;
@@ -39,21 +39,20 @@ namespace Scellecs.Morpeh
                     return m_entityEnumerator.MoveNext();
 
                 m_index++;
-                return m_index < m_entities.Length - 1 && m_entities[m_index] != null;
+                return m_index < m_entities.Length - 1;
             }
 
             public void Reset()
             {
                 if (m_useEntityEnumerator)
                 {
-                    ((IEnumerator)m_entityEnumerator).Reset();
+                    m_entityEnumerator.entityIndex = 0;
                     return;
                 }
-
                 m_index = 0;
             }
 
-            public Entity Current => m_useEntityEnumerator ? m_entityEnumerator.Current : m_entities[m_index];
+            public Entity Current => m_useEntityEnumerator ? m_entityEnumerator.Current : m_entities[m_index].currentArchetype.entities.data[m_entities[m_index].indexInCurrentArchetype];
 
             object IEnumerator.Current => m_useEntityEnumerator ? m_entityEnumerator.Current : Current;
 
@@ -67,7 +66,7 @@ namespace Scellecs.Morpeh
         public CompiledQuery(Filter filter)
         {
             this.filter = filter;
-            hasFilter = filter.excludedTypeIds.length > 0 || filter.includedTypeIds.length > 0;
+            hasFilter = filter.excludedTypeIds.Length > 0 || filter.includedTypeIds.Length > 0;
         }
 
         public bool IsEmpty()

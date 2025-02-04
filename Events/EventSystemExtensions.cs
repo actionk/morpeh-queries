@@ -33,7 +33,7 @@ namespace Scellecs.Morpeh
         [PublicAPI]
         public static void ScheduleEventForEntity<T>(this Entity entity) where T : IWorldEvent, new()
         {
-            ScheduleEventForEntity(entity.world, entity, new T());
+            ScheduleEventForEntity(entity.GetWorld(), entity, new T());
         }
 
         [PublicAPI]
